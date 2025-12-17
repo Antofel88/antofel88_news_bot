@@ -3,4 +3,6 @@
 .mypy_cache/
 .vscode/
 venv/
+test/
+old/
 __pycache__/
