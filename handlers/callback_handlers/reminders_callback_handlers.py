@@ -71,9 +71,9 @@ async def process_monthly_reminders_read(callback: CallbackQuery):
         result = cursor.fetchall()
 
     if result:
-        text = "Число Событие\n\n"
-        for date, event in result:
-            text += f"{date.ljust(5)} {event}\n\n"
+        text = "Номер Число Событие\n\n"
+        for num, date, event in result:
+            text += f"  {str(num).ljust(5)} {date.ljust(3)} {event}\n\n"
 
         await callback.message.edit_text(
             text=f"`{text}`",
@@ -98,9 +98,9 @@ async def process_annual_reminders_read(callback: CallbackQuery):
         result = cursor.fetchall()
 
     if result:
-        text = "Число Событие\n\n"
-        for date, event in result:
-            text += f"{date.ljust(5)} {event}\n\n"
+        text = "Номер Число Событие\n\n"
+        for num, date, event in result:
+            text += f"{str(num).ljust(5)}{date.ljust(5)} {event}\n\n"
 
         await callback.message.edit_text(
             text=f"`{text}`",
