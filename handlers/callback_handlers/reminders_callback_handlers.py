@@ -113,3 +113,32 @@ async def process_annual_reminders_read(callback: CallbackQuery):
             reply_markup=annual_reminders_kb_builder.as_markup(),
         )
 
+
+@router.callback_query(F.data == "annual_reminders_current_month")
+async def process_annual_reminders_current_month(callback: CallbackQuery):
+
+    day_today = datetime.now().strftime("%m")
+
+    with sqlite3.connect("db/calendar.db") as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT date, event FROM annual_reminders WHERE date LIKE ?",
+            (f"%.{day_today}",),
+        )
+        result = cur.fetchall()
+
+    if result:
+        text = ""
+        for date, event in result:
+            text += f"{date.ljust(5)} - {event}\n\n"
+
+        await callback.message.edit_text(
+            text=f"`{text}`",
+            reply_markup=annual_reminders_kb_builder.as_markup(),
+            parse_mode="MarkdownV2",
+        )
+    else:
+        await callback.message.edit_text(
+            text="Событий в этом месяце нет.",
+            reply_markup=annual_reminders_kb_builder.as_markup(),
+        )

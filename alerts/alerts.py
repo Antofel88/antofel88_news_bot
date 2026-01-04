@@ -104,7 +104,8 @@ async def f1_next_race_alert(bot: Bot):
 
 async def monthly_reminders_alert(bot: Bot):
 
-    day_today = datetime.now().strftime("%d")
+    # Создаем объект текущей даты, переводим ее в строку с нужным форматом и убираем нули в днях
+    day_today = datetime.now().strftime("%d").lstrip("0")
 
     with sqlite3.connect("db/calendar.db") as con:
         cur = con.cursor()
@@ -128,7 +129,8 @@ async def monthly_reminders_alert(bot: Bot):
 
 async def annual_reminders_alert(bot: Bot):
 
-    day_today = datetime.now().strftime("%d.%m")
+    # Создаем объект текущей даты, переводим ее в строку с нужным форматом и убираем нули в днях
+    day_today = datetime.now().strftime("%d.%m").lstrip("0")
 
     with sqlite3.connect("db/calendar.db") as con:
         cur = con.cursor()

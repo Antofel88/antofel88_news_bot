@@ -141,6 +141,10 @@ annual_reminders_inline_buttons = [
         callback_data="annual_reminders_read",
     ),
     InlineKeyboardButton(
+        text="Текущий месяц",
+        callback_data="annual_reminders_current_month",
+    ),
+    InlineKeyboardButton(
         text="Добавить",
         callback_data="annual_reminders_write",
     ),
