@@ -10,6 +10,7 @@ from handlers.callback_handlers import (
     traktor_callback_handlers,
     ufc_callback_handlers,
 )
+from states import states
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from alerts.alerts import (
@@ -90,6 +91,7 @@ async def main():
     dp.include_router(ufc_callback_handlers.router)
     dp.include_router(f1_callback_handlers.router)
     dp.include_router(reminders_callback_handlers.router)
+    dp.include_router(states.router)
 
     # Пропускаем накопившиеся апдейты и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)
