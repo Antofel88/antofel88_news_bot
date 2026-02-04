@@ -104,15 +104,17 @@ async def f1_next_race_alert(bot: Bot):
 
 async def monthly_reminders_alert(bot: Bot):
 
-    # Создаем объект текущей даты, переводим ее в строку с нужным форматом и убираем нули в днях
-    day_today = datetime.now().strftime("%d").lstrip("0")
+    # Создаем объект текущей даты, выбираем атрибут текущего дня
+    day_today = datetime.now().day
 
     with sqlite3.connect("db/calendar.db") as con:
         cur = con.cursor()
+        # Ищем в столбце date полное совпадение day_today
         cur.execute(
-            "SELECT date, event FROM monthly_reminders WHERE date LIKE ?",
-            (f"{day_today}%",),
+            "SELECT date, event FROM monthly_reminders WHERE date = ?",
+            (day_today,),
         )
+        # На выходе получаем список кортежей(дата, событие)
         result = cur.fetchall()
 
     if result:
@@ -134,10 +136,12 @@ async def annual_reminders_alert(bot: Bot):
 
     with sqlite3.connect("db/calendar.db") as con:
         cur = con.cursor()
+        # Ищем в столбце date полное совпадение day_today
         cur.execute(
-            "SELECT date, event FROM annual_reminders WHERE date LIKE ?",
-            (f"{day_today}%",),
+            "SELECT date, event FROM annual_reminders WHERE date = ?",
+            (day_today,),  # Точное совпадение
         )
+        # На выходе получаем список кортежей(дата, событие)
         result = cur.fetchall()
 
     if result:
