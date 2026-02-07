@@ -1,5 +1,6 @@
 .env
 
+.db/
 .mypy_cache/
 .vscode/
 .venv/
