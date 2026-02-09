@@ -24,9 +24,18 @@ class AddMonthlyReminder(StatesGroup):
     event = State()  # Состояние 2: ожидание ввода события (текста)
 
 
+class DeleteMonthlyReminder(StatesGroup):
+    """
+    Класс состояний для процесса удаления напоминания.
+    Каждое состояние - это отдельный этап диалога с пользователем.
+    """
+
+    select_id = State()  # Состояние 1: ожидание ввода ID записи и удаление
+
+
 # ОБРАБОТЧИК НАЖАТИЯ НА КНОПКУ "Добавить" (НАЧАЛО ПРОЦЕССА)
 @router.callback_query(F.data == "monthly_reminders_write")
-async def add_reminder_start(callback: CallbackQuery, state: FSMContext):
+async def add_monthly_reminder_start(callback: CallbackQuery, state: FSMContext):
     """
     Эта функция вызывается когда пользователь нажимает на inline-кнопку
     с callback_data="monthly_reminders_write"
@@ -120,3 +129,90 @@ async def save_event_monthly_reminders(message: Message, state: FSMContext):
     # Пользователь возвращается в "нейтральное" состояние
     await state.clear()
     await message.answer(f"Событие {date} {event} успешно добавлено в БД")
+
+
+@router.callback_query(F.data == "monthly_reminders_delete")
+async def delete_reminder_start(callback: CallbackQuery, state: FSMContext):
+    """
+    Эта функция вызывается когда пользователь нажимает на inline-кнопку
+    с callback_data="monthly_reminders_delete"
+    """
+
+    # Сначала покажем пользователю список существующих записей
+    with sqlite3.connect("db/calendar.db") as conn:
+        cursor = conn.cursor()
+
+        # Проверяем, существует ли таблица
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='monthly_reminders'"
+        )
+        if not cursor.fetchone():
+            await callback.message.answer("📭 База данных пуста. Нечего удалять.")
+            return
+
+        # Получаем все записи из таблицы
+        cursor.execute("SELECT id, date, event FROM monthly_reminders ORDER BY id")
+        records = cursor.fetchall()
+
+        if not records:
+            await callback.message.answer("📭 База данных пуста. Нечего удалять.")
+            return
+
+        # Формируем сообщение со списком записей
+        message_text = "📋 Список напоминаний:\n\n"
+        for record in records:
+            id_num, date, event = record
+            message_text += f"🆔 <b>ID {id_num}</b>: {date} - {event}\n"
+
+        message_text += "\nВведите ID записи, которую хотите удалить:"
+
+    await callback.message.answer(message_text, parse_mode="HTML")
+
+    # Устанавливаем начальное состояние для удаления
+    await state.set_state(DeleteMonthlyReminder.select_id)
+
+
+@router.message(DeleteMonthlyReminder.select_id)
+async def select_id_for_delete(message: Message, state: FSMContext):
+    """
+    Упрощенный вариант: удаляем сразу после ввода ID
+    """
+    try:
+        record_id = int(message.text.strip())
+
+        with sqlite3.connect("db/calendar.db") as conn:
+            cursor = conn.cursor()
+
+            # Сначала получаем информацию о записи для отчета
+            cursor.execute(
+                "SELECT date, event FROM monthly_reminders WHERE id = ?", (record_id,)
+            )
+            record = cursor.fetchone()
+
+            if not record:
+                await message.answer(f"❌ Запись с ID {record_id} не найдена.")
+                await state.clear()
+                return
+
+            date, event = record
+
+            # Удаляем запись
+            cursor.execute("DELETE FROM monthly_reminders WHERE id = ?", (record_id,))
+
+            await message.answer(
+                f"✅ Запись успешно удалена:\n"
+                f"🆔 ID: {record_id}\n"
+                f"📅 Дата: {date}\n"
+                f"📝 Событие: {event}"
+            )
+
+    except ValueError:
+        await message.answer(
+            "❌ Пожалуйста, введите корректный номер ID (целое число):"
+        )
+        return
+    except sqlite3.Error as e:
+        await message.answer(f"❌ Ошибка при удалении: {e}")
+
+    # Очищаем состояние
+    await state.clear()
