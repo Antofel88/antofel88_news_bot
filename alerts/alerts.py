@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import random
 import re
 
-
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
@@ -67,12 +66,15 @@ async def ufc_next_tournament_alert(bot: Bot):
 
     text += "\n\nТрансляция МАТЧ ТВ: https://matchtv.ru/on-air \nТрансляция КП: https://hd.kinopoisk.ru/sport/competition/114468"
     day_today = date.today().day
+    # Получаем список в формате [дата, год]
     ufc_date_list = list(map(int, re.findall(r"\b\d+\b", ufc_date)))
-
+    # Делаем проверку на ближайшие два дня и еще переход на первые дни месяца, т.к. 30+2=32, а такого дня в месяце нет
     if (
-        (day_today in ufc_date_list)
-        or ((day_today + 1) in ufc_date_list)
-        or ((day_today + 2) in ufc_date_list)
+        (day_today == ufc_date_list[0])
+        or ((day_today + 1) == ufc_date_list[0])
+        or ((day_today + 2) == ufc_date_list[0])
+        or (1 == ufc_date_list[0])
+        or (2 == ufc_date_list[0])
     ):
         await bot.send_message(
             chat_id="951807751",

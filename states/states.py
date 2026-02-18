@@ -260,7 +260,6 @@ async def add_monthly_reminder_start(callback: CallbackQuery, state: FSMContext)
     await state.set_state(AddAnnualReminder.date)
 
 
-# ОБРАБОТЧИК ВВОДА ДАТЫ (ПЕРВЫЙ ШАГ)
 @router.message(AddAnnualReminder.date)
 async def save_date_monthly_reminders(message: Message, state: FSMContext):
     """
@@ -283,7 +282,6 @@ async def save_date_monthly_reminders(message: Message, state: FSMContext):
     await message.answer("Введите ежегодное событие:")
 
 
-# ОБРАБОТЧИК ВВОДА СОБЫТИЯ (ВТОРОЙ ШАГ И СОХРАНЕНИЕ В БД)
 @router.message(AddAnnualReminder.event)
 async def save_event_monthly_reminders(message: Message, state: FSMContext):
     """
