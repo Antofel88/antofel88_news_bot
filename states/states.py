@@ -53,6 +53,45 @@ class DeleteAnnualReminder(StatesGroup):
     select_id = State()  # Состояние 1: ожидание ввода ID записи и удаление
 
 
+def normalize_date(date_str: str) -> str:
+    """
+    Принимает дату в любом формате (д.м, дд.м, д.мм, дд.мм)
+    Возвращает нормализованную дату в формате ДД.ММ
+    """
+    try:
+        # Очищаем от пробелов
+        date_str = date_str.strip()
+
+        # Разделяем по точке
+        if "." not in date_str:
+            raise ValueError("Нет разделителя '.'")
+
+        day_part, month_part = date_str.split(".")
+
+        # Удаляем пробелы и преобразуем в числа
+        day = int(day_part.strip())
+        month = int(month_part.strip())
+
+        # Валидация
+        if not (1 <= day <= 31):
+            raise ValueError("День должен быть 1-31")
+        if not (1 <= month <= 12):
+            raise ValueError("Месяц должен быть 1-12")
+
+        # Проверка дней в месяце
+        days_in_month = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        if day > days_in_month[month - 1]:
+            raise ValueError(f"В месяце {month} только {days_in_month[month-1]} дней")
+
+        # Возвращаем с ведущими нулями
+        return f"{day:02d}.{month:02d}"
+
+    except ValueError as e:
+        raise ValueError(f"Неверный формат даты: {e}")
+    except Exception:
+        raise ValueError("Используйте формат ДД.ММ (например, 15.01)")
+
+
 # ОБРАБОТЧИК НАЖАТИЯ НА КНОПКУ "Добавить" (НАЧАЛО ПРОЦЕССА)
 @router.callback_query(F.data == "monthly_reminders_write")
 async def add_monthly_reminder_start(callback: CallbackQuery, state: FSMContext):
@@ -252,7 +291,7 @@ async def add_monthly_reminder_start(callback: CallbackQuery, state: FSMContext)
     """
 
     # Отправляем пользователю сообщение с просьбой ввести число
-    await callback.message.answer("Введите число и месяц в формате д.м. :")
+    await callback.message.answer("📅 Введите дату (ДД.ММ):")
 
     # Устанавливаем начальное состояние для этого пользователя
     # set_state() переводит пользователя в указанное состояние
@@ -269,17 +308,23 @@ async def save_date_monthly_reminders(message: Message, state: FSMContext):
 
     Функция получает число от пользователя и переводит его к следующему шагу
     """
-    # Сохраняем введенное число во временное хранилище FSM
-    # update_data() добавляет или обновляет данные в хранилище состояний
-    # Эти данные будут доступны на следующих шагах
-    await state.update_data(date=message.text)
+    try:
+        # Нормализуем дату
+        date = normalize_date(message.text)
+        # Сохраняем введенное число во временное хранилище FSM
+        # update_data() добавляет или обновляет данные в хранилище состояний
+        # Эти данные будут доступны на следующих шагах
+        await state.update_data(date=date)
 
-    # Меняем состояние пользователя на следующее
-    # Теперь будем ждать ввод события
-    await state.set_state(AddAnnualReminder.event)
+        # Меняем состояние пользователя на следующее
+        # Теперь будем ждать ввод события
+        await state.set_state(AddAnnualReminder.event)
 
-    # Просим пользователя ввести событие
-    await message.answer("Введите ежегодное событие:")
+        # Просим пользователя ввести событие
+        await message.answer("Введите ежегодное событие:")
+
+    except ValueError as e:
+        await message.answer(f"❌ {e}\nПопробуйте еще раз:")
 
 
 @router.message(AddAnnualReminder.event)
@@ -302,6 +347,10 @@ async def save_event_monthly_reminders(message: Message, state: FSMContext):
 
     # message.text - это текст события, которое пользователь ввел сейчас
     event = message.text
+
+    if not event:
+        await message.answer("Событие не может быть пустым:")
+        return
 
     # СОХРАНЕНИЕ В БАЗУ ДАННЫХ SQLite
     # Используем контекстный менеджер (with) для работы с базой данных
