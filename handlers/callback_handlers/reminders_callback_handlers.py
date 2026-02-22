@@ -66,24 +66,34 @@ async def process_monthly_reminders_read(callback: CallbackQuery):
     with sqlite3.connect("db/calendar.db") as con:
         cursor = con.cursor()
         # Выбираем все строки таблицы
-        cursor.execute("SELECT * FROM monthly_reminders")
+        cursor.execute(
+            """
+            SELECT date, event 
+            FROM monthly_reminders            
+            ORDER BY CAST(SUBSTR(date, 1, 2) AS INTEGER)
+            """
+        )
         # Получение результата всех строк fetchall()
         result = cursor.fetchall()
 
     if result:
-        text = ""
-        for num, date, event in result:
-            text += f"{str(num).ljust(2)}| {date.ljust(2)} число - {event}\n\n"
+        text = "📅 <b>ВСЕ ЕЖЕМЕСЯЧНЫЕ НАПОМИНАНИЯ</b>\n\n"
+        for date, event in result:
+            text += f"{date.ljust(2)} число - {event}\n\n"
+
+        text += f"\n📊 <b>Всего записей: {len(result)}</b>"
 
         await callback.message.edit_text(
-            text=f"`{text}`",
+            text=text,
             reply_markup=monthly_reminders_kb_builder.as_markup(),
-            parse_mode="MarkdownV2",
+            parse_mode="HTML",
         )
     else:
+        # Если записей нет
         await callback.message.edit_text(
-            text="Событий нет.",
+            text="📭 <b>Событий нет</b>\n\nБаза данных ежемесячных напоминаний пуста.",
             reply_markup=monthly_reminders_kb_builder.as_markup(),
+            parse_mode="HTML",
         )
 
 
@@ -93,24 +103,74 @@ async def process_annual_reminders_read(callback: CallbackQuery):
     with sqlite3.connect("db/calendar.db") as con:
         cursor = con.cursor()
         # Выбираем все строки таблицы
-        cursor.execute("SELECT * FROM annual_reminders")
+        cursor.execute(
+            """
+            SELECT date, event 
+            FROM annual_reminders 
+            ORDER BY 
+                CAST(SUBSTR(date, 4, 2) AS INTEGER),  -- сначала по месяцу
+                CAST(SUBSTR(date, 1, 2) AS INTEGER)   -- потом по дню
+        """
+        )
         # Получение результата всех строк fetchall()
         result = cursor.fetchall()
 
     if result:
-        text = ""
-        for num, date, event in result:
-            text += f"{str(num).ljust(3)}| {date.ljust(5)} - {event}\n\n"
+        # =========================================================
+        # ФОРМИРУЕМ ТЕКСТ С ГРУППИРОВКОЙ ПО МЕСЯЦАМ
+        # =========================================================
+
+        # Словарь для преобразования номера месяца в название
+        month_names = {
+            "01": "Январь",
+            "02": "Февраль",
+            "03": "Март",
+            "04": "Апрель",
+            "05": "Май",
+            "06": "Июнь",
+            "07": "Июль",
+            "08": "Август",
+            "09": "Сентябрь",
+            "10": "Октябрь",
+            "11": "Ноябрь",
+            "12": "Декабрь",
+        }
+
+        text = "📅 <b>ВСЕ ЕЖЕГОДНЫЕ НАПОМИНАНИЯ</b>\n\n"
+
+        # Переменная для отслеживания текущего месяца
+        current_month = ""
+
+        # Перебираем все отсортированные записи
+        for date, event in result:
+            # Извлекаем месяц из даты (последние 2 символа после точки)
+            month = date.split(".")[1]  # например "15.06" -> "06"
+
+            # Если месяц сменился, добавляем заголовок
+            if month != current_month:
+                # Добавляем название нового месяца
+                text += f"\n<b>📌 {month_names[month]}</b>\n"
+                text += "─────────────────\n"
+                current_month = month
+
+            # Добавляем само событие с отступом
+            # date.ljust(5) - выравниваем дату по левому краю до 5 символов
+            text += f"  ▫️ {date.ljust(5)} - {event}\n"
+
+        # Добавляем статистику в конец
+        text += f"\n📊 <b>Всего записей: {len(result)}</b>"
 
         await callback.message.edit_text(
-            text=f"`{text}`",
+            text=text,
             reply_markup=annual_reminders_kb_builder.as_markup(),
-            parse_mode="MarkdownV2",
+            parse_mode="HTML",
         )
     else:
+        # Если записей нет
         await callback.message.edit_text(
-            text="Событий нет.",
+            text="📭 <b>Событий нет</b>\n\nБаза данных ежегодных напоминаний пуста.",
             reply_markup=annual_reminders_kb_builder.as_markup(),
+            parse_mode="HTML",
         )
 
 
@@ -122,23 +182,47 @@ async def process_annual_reminders_current_month(callback: CallbackQuery):
     with sqlite3.connect("db/calendar.db") as con:
         cur = con.cursor()
         cur.execute(
-            "SELECT date, event FROM annual_reminders WHERE date LIKE ?",
+            """
+            SELECT date, event 
+            FROM annual_reminders 
+            WHERE date LIKE ? 
+            ORDER BY CAST(SUBSTR(date, 1, 2) AS INTEGER)
+            """,
             (f"%.{day_today}",),
         )
         result = cur.fetchall()
 
     if result:
-        text = ""
+        # Словарь для преобразования номера месяца в название
+        month_names = {
+            "01": "Январь",
+            "02": "Февраль",
+            "03": "Март",
+            "04": "Апрель",
+            "05": "Май",
+            "06": "Июнь",
+            "07": "Июль",
+            "08": "Август",
+            "09": "Сентябрь",
+            "10": "Октябрь",
+            "11": "Ноябрь",
+            "12": "Декабрь",
+        }
+
+        text = f"📅 <b>{month_names[day_today]}</b>\n\n"
+
         for date, event in result:
             text += f"{date.ljust(5)} - {event}\n\n"
 
         await callback.message.edit_text(
-            text=f"`{text}`",
+            text=text,
             reply_markup=annual_reminders_kb_builder.as_markup(),
-            parse_mode="MarkdownV2",
+            parse_mode="HTML",
         )
     else:
+        # Если записей нет
         await callback.message.edit_text(
-            text="Событий в этом месяце нет.",
+            text="📭 <b>В этом месяце событий нет</b>\n\n",
             reply_markup=annual_reminders_kb_builder.as_markup(),
+            parse_mode="HTML",
         )
