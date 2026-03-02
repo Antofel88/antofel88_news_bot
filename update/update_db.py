@@ -47,13 +47,14 @@ async def traktor_update_db():
             ).strftime("%Y-%m-%d %H:%M")}", "{item[1].text.strip()}", "{item[2].text.strip().lower()}", "{item[3].text.strip().replace("\n", " ")}")"""
             )
 
+
 async def f1_update_db():
-    url = "https://www.championat.com/auto/_f1/tournament/922/calendar/"
+    url = "https://www.championat.com/auto/_f1/tournament/1032/calendar/"
     response = requests.get(url=url, headers=headers)
     soup = BeautifulSoup(response.text, "lxml")
 
     date = soup.find_all(class_="tournament-calendar__date")
-    race = soup.find_all(class_="tournament-calendar__name")
+    event = soup.find_all(class_="tournament-calendar__name")
 
     with sq.connect("db/calendar.db") as con:
         cur = con.cursor()
@@ -63,21 +64,22 @@ async def f1_update_db():
         cur.execute(
             """CREATE TABLE IF NOT EXISTS f1_calendar (
                     date TEXT,
-                    race TEXT
+                    event TEXT
                     )"""
         )
 
-        for item in zip(date, race):
+        for item in zip(date, event):
             if "гонка" in item[1].text.lower() or (
                 "спринт" in item[1].text.lower()
                 and "квалификация" not in item[1].text.lower()
             ):
                 cur.execute(
-                    f"""INSERT INTO f1_calendar (date, race) VALUES ("{(
+                    f"""INSERT INTO f1_calendar (date, event) VALUES ("{(
                     datetime.strptime(item[0].text.strip(), "%d.%m.%Y %H:%M")
                     + timedelta(hours=2)
                 ).strftime("%Y-%m-%d %H:%M")}", "{item[1].text.strip()}")"""
                 )
+
 
 # async def washington_update_db():
 #     url = "https://www.sports.ru/hockey/club/washington-capitals/calendar/"
