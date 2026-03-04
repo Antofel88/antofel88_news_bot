@@ -65,7 +65,7 @@ async def process_annual_reminders(callback: CallbackQuery):
 async def process_monthly_reminders(callback: CallbackQuery):
 
     await callback.message.edit_text(
-        text="📅 Ежемесячные напоминания",
+        text="📅 Одноразовые напоминания",
         reply_markup=onetime_reminders_kb_builder.as_markup(),
     )
 
