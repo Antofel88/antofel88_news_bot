@@ -107,6 +107,9 @@ reminders_inline_buttons = [
         text="Ежегодные напоминания", callback_data="annual_reminders"
     ),
     InlineKeyboardButton(
+        text="Одноразовые напоминания", callback_data="onetime_reminders"
+    ),
+    InlineKeyboardButton(
         text="На главную",
         callback_data="main_kb",
     ),
@@ -158,3 +161,28 @@ annual_reminders_inline_buttons = [
     ),
 ]
 annual_reminders_kb_builder.row(*annual_reminders_inline_buttons, width=1)
+
+onetime_reminders_kb_builder = InlineKeyboardBuilder()
+onetime_reminders_inline_buttons = [
+    InlineKeyboardButton(
+        text="Все напоминания",
+        callback_data="onetime_reminders_read",
+    ),
+    InlineKeyboardButton(
+        text="Текущий месяц",
+        callback_data="onetime_reminders_current_month",
+    ),
+    InlineKeyboardButton(
+        text="Добавить",
+        callback_data="onetime_reminders_write",
+    ),
+    InlineKeyboardButton(
+        text="Удалить",
+        callback_data="onetime_reminders_delete",
+    ),
+    InlineKeyboardButton(
+        text="Назад",
+        callback_data="reminders_kb",
+    ),
+]
+onetime_reminders_kb_builder.row(*onetime_reminders_inline_buttons, width=1)

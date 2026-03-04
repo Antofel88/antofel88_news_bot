@@ -133,7 +133,7 @@ async def monthly_reminders_alert(bot: Bot):
 
 async def annual_reminders_alert(bot: Bot):
 
-    # Создаем объект текущей даты, переводим ее в строку с нужным форматом и убираем нули в днях
+    # Создаем объект текущей даты, переводим ее в строку с нужным форматом
     day_today = datetime.now().strftime("%d.%m")
 
     with sqlite3.connect("db/calendar.db") as con:

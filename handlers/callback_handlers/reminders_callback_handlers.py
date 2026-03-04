@@ -12,6 +12,7 @@ from keyboards.inline_keyboards import (
     reminders_kb_builder,
     monthly_reminders_kb_builder,
     annual_reminders_kb_builder,
+    onetime_reminders_kb_builder,
 )
 
 
@@ -57,6 +58,15 @@ async def process_annual_reminders(callback: CallbackQuery):
     await callback.message.edit_text(
         text="📅 Ежегодные Напоминания",
         reply_markup=annual_reminders_kb_builder.as_markup(),
+    )
+
+
+@router.callback_query(F.data == "onetime_reminders")
+async def process_monthly_reminders(callback: CallbackQuery):
+
+    await callback.message.edit_text(
+        text="📅 Ежемесячные напоминания",
+        reply_markup=onetime_reminders_kb_builder.as_markup(),
     )
 
 
