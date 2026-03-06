@@ -53,14 +53,13 @@ async def f1_update_db():
     response = requests.get(url=url, headers=headers)
     soup = BeautifulSoup(response.text, "lxml")
 
-    date = soup.find_all(class_="tournament-calendar__date")
-    event = soup.find_all(class_="tournament-calendar__name")
+    date_elements = soup.find_all(class_="tournament-calendar__date")
+    event_elements = soup.find_all(class_="tournament-calendar__name")
 
     with sq.connect("db/calendar.db") as con:
         cur = con.cursor()
 
-        cur.execute(f"""DELETE FROM f1_calendar""")
-
+        # Сначала создаем таблицу (если её нет)
         cur.execute(
             """CREATE TABLE IF NOT EXISTS f1_calendar (
                     date TEXT,
@@ -68,16 +67,31 @@ async def f1_update_db():
                     )"""
         )
 
-        for item in zip(date, event):
-            if "гонка" in item[1].text.lower() or (
-                "спринт" in item[1].text.lower()
-                and "квалификация" not in item[1].text.lower()
+        # Потом очищаем её (теперь таблица точно существует)
+        cur.execute("DELETE FROM f1_calendar")
+
+        for date_elem, event_elem in zip(date_elements, event_elements):
+            event_text = event_elem.text.strip()
+
+            if "гонка" in event_text.lower() or (
+                "спринт" in event_text.lower()
+                and "квалификация" not in event_text.lower()
             ):
+                date_text = date_elem.text.strip()
+
+                try:
+                    # Пробуем распарсить с временем
+                    dt = datetime.strptime(date_text, "%d.%m.%Y %H:%M")
+                except ValueError:
+                    # Если не получается, пробуем только дату
+                    dt = datetime.strptime(date_text, "%d.%m.%Y")
+
+                # Добавляем 2 часа
+                dt = dt + timedelta(hours=2)
+
                 cur.execute(
-                    f"""INSERT INTO f1_calendar (date, event) VALUES ("{(
-                    datetime.strptime(item[0].text.strip(), "%d.%m.%Y %H:%M")
-                    + timedelta(hours=2)
-                ).strftime("%Y-%m-%d %H:%M")}", "{item[1].text.strip()}")"""
+                    "INSERT INTO f1_calendar (date, event) VALUES (?, ?)",
+                    (dt.strftime("%Y-%m-%d %H:%M"), event_text),
                 )
 
 
