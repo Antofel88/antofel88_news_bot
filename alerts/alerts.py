@@ -32,12 +32,16 @@ async def traktor_next_game_alert(bot: Bot):
     if result:
         date, team, home_guest = result
 
-        if home_guest == "дома":
-            text = f"Сегодня {date} Трактор - {team}\n\nТрансляция ОТВ: https://1obl.tv/online\nТрансляция КП: https://hd.kinopoisk.ru/sport/team/80838"
-        else:
-            text = f"Сегодня {date} {team} - Трактор\n\nТрансляция ОТВ: https://1obl.tv/online\nТрансляция КП: https://hd.kinopoisk.ru/sport/team/80838"
+        chat_ids = ["951807751", "749731969"]  # список с чатами, второй - Санин
 
-        await bot.send_message(chat_id="951807751", text=text)
+        for chat_id in chat_ids:
+
+            if home_guest == "дома":
+                text = f"Сегодня {date} Трактор - {team}\n\nТрансляция ОТВ: https://1obl.tv/online\nТрансляция КП: https://hd.kinopoisk.ru/sport/team/80838"
+            else:
+                text = f"Сегодня {date} {team} - Трактор\n\nТрансляция ОТВ: https://1obl.tv/online\nТрансляция КП: https://hd.kinopoisk.ru/sport/team/80838"
+
+            await bot.send_message(chat_id=chat_id, text=text)
 
 
 async def ufc_next_tournament_alert(bot: Bot):
@@ -98,10 +102,15 @@ async def f1_next_race_alert(bot: Bot):
 
     if result:
         date, event = result
-        await bot.send_message(
-            chat_id="951807751",
-            text=f"Завтра {date} {event}\n\nТрансляция VK: https://vkvideo.ru/@stanizlavskylive",
-        )
+
+        chat_ids = ["951807751", "749731969"]  # список с чатами, второй - Санин
+
+        for chat_id in chat_ids:
+            
+            await bot.send_message(
+                chat_id=chat_id,
+                text=f"Завтра {date} {event}\n\nТрансляция VK: https://vkvideo.ru/@stanizlavskylive",
+            )
 
 
 async def monthly_reminders_alert(bot: Bot):

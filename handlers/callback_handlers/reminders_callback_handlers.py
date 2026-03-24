@@ -23,16 +23,6 @@ headers = {
 }
 
 
-# Вывод клавы напоминаний
-@router.callback_query(F.data == "reminders_kb")
-async def process_reminders_kb(callback: CallbackQuery):
-
-    await callback.message.edit_text(
-        text="📅 Напоминания",
-        reply_markup=reminders_kb_builder.as_markup(),
-    )
-
-
 # Напоминания
 @router.callback_query(F.data == "reminders")
 async def process_reminders(callback: CallbackQuery):

@@ -132,7 +132,7 @@ monthly_reminders_inline_buttons = [
     ),
     InlineKeyboardButton(
         text="Назад",
-        callback_data="reminders_kb",
+        callback_data="reminders",
     ),
 ]
 monthly_reminders_kb_builder.row(*monthly_reminders_inline_buttons, width=1)
