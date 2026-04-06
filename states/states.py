@@ -105,7 +105,7 @@ def normalize_date(date_str: str) -> str:
             raise ValueError(f"В месяце {month} только {days_in_month[month-1]} дней")
 
         # Возвращаем с ведущими нулями
-        return f"{day:02d}-{month:02d}"
+        return f"{day:02d}.{month:02d}"
 
     except ValueError as e:
         raise ValueError(f"Неверный формат даты: {e}")
