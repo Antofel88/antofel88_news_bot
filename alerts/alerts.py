@@ -170,7 +170,7 @@ async def annual_reminders_alert(bot: Bot):
 async def onetime_reminders_alert(bot: Bot):
 
     # Создаем объект текущей даты и времени, переводим ее в строку с нужным форматом
-    now = datetime.now()
+    now = datetime.now() + timedelta(hours=2)
     day_today = now.strftime("%d.%m")
     current_time = now.strftime("%H-%M")
 

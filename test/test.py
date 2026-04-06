@@ -8,15 +8,16 @@ from datetime import datetime
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-# Создаем объект текущей даты, переводим ее в строку с нужным форматом
-day_today = datetime.now().strftime("%d.%m")
+now = datetime.now()
+day_today = now.strftime("%d.%m")
+current_time = now.strftime("%H-%M")
 
 with sqlite3.connect("db/calendar.db") as con:
     cur = con.cursor()
-    # Ищем в столбце date полное совпадение day_today
+    # Ищем записи с сегодняшней датой и временем, не превышающим текущее
     cur.execute(
-        "SELECT date, time, event FROM onetime_reminders WHERE date = ?",
-        (day_today,),  # Точное совпадение
+        "SELECT date, time, event FROM onetime_reminders WHERE date = ? AND time <= ?",
+        (day_today, current_time),
     )
     # На выходе получаем список кортежей(дата, событие)
     result = cur.fetchall()
@@ -25,7 +26,6 @@ with sqlite3.connect("db/calendar.db") as con:
         text = f"Сегодня {day_today}:\n"
 
         for _, time_event, event in result:
-            text += f"{time_event.ljust(5)} - {event}\n"       
+            text += f"{time_event.ljust(5)} - {event}\n"
 
-        # Удаляем найденные записи
-        cur.execute("DELETE FROM onetime_reminders WHERE date = ?", (day_today,))
+        print(text)
