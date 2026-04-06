@@ -19,6 +19,7 @@ from alerts.alerts import (
     f1_next_race_alert,
     monthly_reminders_alert,
     annual_reminders_alert,
+    onetime_reminders_alert,
 )
 from update.update_db import (
     traktor_update_db,
@@ -73,7 +74,11 @@ async def main():
     )
 
     scheduler.add_job(
-        annual_reminders_alert, trigger="cron", hour=7, kwargs={"bot": bot}
+        annual_reminders_alert, trigger="cron", hour=8, kwargs={"bot": bot}
+    )
+
+    scheduler.add_job(
+        onetime_reminders_alert, trigger="interval", minutes=1, kwargs={"bot": bot}
     )
 
     # Добавляем задания на обновления баз

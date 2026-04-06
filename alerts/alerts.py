@@ -106,7 +106,7 @@ async def f1_next_race_alert(bot: Bot):
         chat_ids = ["951807751", "749731969"]  # список с чатами, второй - Санин
 
         for chat_id in chat_ids:
-            
+
             await bot.send_message(
                 chat_id=chat_id,
                 text=f"Завтра {date} {event}\n\nТрансляция VK: https://vkvideo.ru/@stanizlavskylive",
@@ -165,3 +165,37 @@ async def annual_reminders_alert(bot: Bot):
             chat_id="951807751",
             text=text,
         )
+
+
+async def onetime_reminders_alert(bot: Bot):
+
+    # Создаем объект текущей даты и времени, переводим ее в строку с нужным форматом
+    now = datetime.now()
+    day_today = now.strftime("%d.%m")
+    current_time = now.strftime("%H-%M")
+
+    with sqlite3.connect("db/calendar.db") as con:
+        cur = con.cursor()
+        # Ищем записи с сегодняшней датой и временем, не превышающим текущее
+        cur.execute(
+            "SELECT date, time, event FROM onetime_reminders WHERE date = ? AND time <= ?",
+            (day_today, current_time),
+        )
+        # На выходе получаем список кортежей(дата, событие)
+        result = cur.fetchall()
+
+        if result:
+            text = f"Сегодня {day_today}:\n"
+
+            for _, time_event, event in result:
+                text += f"{time_event.ljust(5)} - {event}\n"
+
+            await bot.send_message(
+                chat_id="951807751",
+                text=text,
+            )
+            # Удаляем все отправленные напоминания
+            cur.execute(
+                "DELETE FROM onetime_reminders WHERE date = ? AND time <= ?",
+                (day_today, current_time),
+            )

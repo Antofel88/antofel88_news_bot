@@ -157,7 +157,7 @@ annual_reminders_inline_buttons = [
     ),
     InlineKeyboardButton(
         text="Назад",
-        callback_data="reminders_kb",
+        callback_data="reminders",
     ),
 ]
 annual_reminders_kb_builder.row(*annual_reminders_inline_buttons, width=1)
@@ -182,7 +182,7 @@ onetime_reminders_inline_buttons = [
     ),
     InlineKeyboardButton(
         text="Назад",
-        callback_data="reminders_kb",
+        callback_data="reminders",
     ),
 ]
 onetime_reminders_kb_builder.row(*onetime_reminders_inline_buttons, width=1)
