@@ -270,14 +270,14 @@ async def process_onetime_reminders_current_month(callback: CallbackQuery):
 
         await callback.message.edit_text(
             text=text,
-            reply_markup=annual_reminders_kb_builder.as_markup(),
+            reply_markup=onetime_reminders_kb_builder.as_markup(),
             parse_mode="HTML",
         )
     else:
         # Если записей нет
         await callback.message.edit_text(
             text="📭 <b>В этом месяце событий нет</b>\n\n",
-            reply_markup=annual_reminders_kb_builder.as_markup(),
+            reply_markup=onetime_reminders_kb_builder.as_markup(),
             parse_mode="HTML",
         )
 
@@ -347,13 +347,13 @@ async def process_onetime_reminders_read(callback: CallbackQuery):
 
         await callback.message.edit_text(
             text=text,
-            reply_markup=annual_reminders_kb_builder.as_markup(),
+            reply_markup=onetime_reminders_kb_builder.as_markup(),
             parse_mode="HTML",
         )
     else:
         # Если записей нет
         await callback.message.edit_text(
             text="📭 <b>Событий нет</b>\n\nБаза данных одноразовых напоминаний пуста.",
-            reply_markup=annual_reminders_kb_builder.as_markup(),
+            reply_markup=onetime_reminders_kb_builder.as_markup(),
             parse_mode="HTML",
         )
