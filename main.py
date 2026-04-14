@@ -77,9 +77,9 @@ async def main():
         annual_reminders_alert, trigger="cron", hour=8, kwargs={"bot": bot}
     )
 
-    scheduler.add_job(
-        onetime_reminders_alert, trigger="interval", minutes=1, kwargs={"bot": bot}
-    )
+    # scheduler.add_job(
+    #     onetime_reminders_alert, trigger="interval", minutes=1, kwargs={"bot": bot}
+    # )
 
     # Добавляем задания на обновления баз
     scheduler.add_job(traktor_update_db, trigger="cron", hour=2)

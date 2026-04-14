@@ -213,7 +213,7 @@ async def save_event_monthly_reminders(message: Message, state: FSMContext):
     """
     Эта функция вызывается когда:
     1. Пользователь отправил текстовое сообщение
-    2. ТЕКУЩЕЕ состояние пользователя = ddMonthlyReminder.event
+    2. ТЕКУЩЕЕ состояние пользователя = AddMonthlyReminder.event
 
     Функция получает событие и сохраняет все данные в базу данных
     """
@@ -246,14 +246,14 @@ async def save_event_monthly_reminders(message: Message, state: FSMContext):
             # Создаем таблицу если она не существует
             # IF NOT EXISTS гарантирует, что таблица создастся только если ее еще нет
             conn.execute(
-                "CREATE TABLE IF NOT EXISTS monthly_reminders (date TEXT, event TEXT)"
+                "CREATE TABLE IF NOT EXISTS monthly_reminders (id INTEGER PRIMARY KEY, date TEXT, event TEXT)"
             )
 
             # Вставляем данные в таблицу
             # ? - placeholders для защиты от SQL-инъекций
             # (date, event) - кортеж значений, которые подставятся вместо ?
             conn.execute(
-                "INSERT INTO monthly_reminders (id, date, event) VALUES (NULL, ?, ?)",
+                "INSERT INTO monthly_reminders (date, event) VALUES (?, ?)",
                 (date, event),
             )
             # commit() вызывается автоматически при выходе из блока with
@@ -471,14 +471,14 @@ async def save_event_annual_reminders(message: Message, state: FSMContext):
             # Создаем таблицу если она не существует
             # IF NOT EXISTS гарантирует, что таблица создастся только если ее еще нет
             conn.execute(
-                "CREATE TABLE IF NOT EXISTS annual_reminders (date TEXT, event TEXT)"
+                "CREATE TABLE IF NOT EXISTS annual_reminders (id INTEGER PRIMARY KEY, date TEXT, event TEXT)"
             )
 
             # Вставляем данные в таблицу
             # ? - placeholders для защиты от SQL-инъекций
             # (date, event) - кортеж значений, которые подставятся вместо ?
             conn.execute(
-                "INSERT INTO annual_reminders (id, date, event) VALUES (NULL, ?, ?)",
+                "INSERT INTO annual_reminders (date, event) VALUES (?, ?)",
                 (date, event),
             )
             # commit() вызывается автоматически при выходе из блока with
@@ -708,10 +708,10 @@ async def save_event_onetime_reminders(message: Message, state: FSMContext):
     try:
         with sqlite3.connect("db/calendar.db") as conn:
             conn.execute(
-                "CREATE TABLE IF NOT EXISTS onetime_reminders (date TEXT, time TEXT, event TEXT)"
+                "CREATE TABLE IF NOT EXISTS onetime_reminders (id INTEGER PRIMARY KEY, date TEXT, time TEXT, event TEXT)"
             )
             conn.execute(
-                "INSERT INTO onetime_reminders (id, date, time, event) VALUES (NULL, ?, ?, ?)",
+                "INSERT INTO onetime_reminders (date, time, event) VALUES (?, ?, ?)",
                 (date, time, event),
             )
 
@@ -744,7 +744,7 @@ async def delete_onetime_reminder_start(callback: CallbackQuery, state: FSMConte
                 "SELECT name FROM sqlite_master WHERE type='table' AND name='onetime_reminders'"
             )
             if not cursor.fetchone():
-                await callback.message.answer("📭 Такой таблицы нет в БД нет.")
+                await callback.message.answer("📭 Такой таблицы нет в БД.")
                 return
 
             # Получаем все записи из таблицы

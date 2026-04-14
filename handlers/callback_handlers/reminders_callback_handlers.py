@@ -321,7 +321,7 @@ async def process_onetime_reminders_read(callback: CallbackQuery):
             "12": "Декабрь",
         }
 
-        text = "📅 <b>ВСЕ ЕЖЕГОДНЫЕ НАПОМИНАНИЯ</b>\n\n"
+        text = "📅 <b>ВСЕ ОДНОРАЗОВЫЕ НАПОМИНАНИЯ</b>\n\n"
 
         # Переменная для отслеживания текущего месяца
         current_month = ""
