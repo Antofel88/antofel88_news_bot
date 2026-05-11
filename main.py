@@ -58,7 +58,7 @@ async def main():
     scheduler.add_job(
         ufc_next_tournament_alert,
         trigger="cron",
-        day_of_week="5",
+        day_of_week="4",
         hour=20,
         kwargs={"bot": bot},
     )

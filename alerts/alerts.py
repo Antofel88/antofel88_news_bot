@@ -73,6 +73,7 @@ async def ufc_next_tournament_alert(bot: Bot):
     # Получаем список в формате [дата, год]
     ufc_date_list = list(map(int, re.findall(r"\b\d+\b", ufc_date)))
     # Делаем проверку на ближайшие два дня и еще переход на первые дни месяца, т.к. 30+2=32, а такого дня в месяце нет
+    chat_ids = ["951807751", "749731969"]  # список с чатами, второй - Санин
     if (
         (day_today == ufc_date_list[0])
         or ((day_today + 1) == ufc_date_list[0])
@@ -80,10 +81,11 @@ async def ufc_next_tournament_alert(bot: Bot):
         or (1 == ufc_date_list[0])
         or (2 == ufc_date_list[0])
     ):
-        await bot.send_message(
-            chat_id="951807751",
-            text=text,
-        )
+        for chat_id in chat_ids:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=text,
+            )
 
 
 async def f1_next_race_alert(bot: Bot):
